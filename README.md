@@ -24,3 +24,5 @@ Steps
 - semantic_eval.py – Semantic similarity analysis
 - scoring_engine.py – Final scoring logic
 - report_generator.py – PDF report generation
+
+Upload a mp3 file and click analyze button for analysis then see the statistics
