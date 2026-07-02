@@ -26,3 +26,22 @@ Steps
 - report_generator.py – PDF report generation
 
 Upload a mp3 file and click analyze button for analysis then see the statistics
+
+
+
+## Speech-to-Text Module
+
+This project uses OpenAI Whisper (`base` model).
+
+Features:
+
+- WAV support
+- Automatic normalization to mono 16 kHz
+- Accurate speech transcription
+- Error handling
+
+Run:
+
+```bash
+streamlit run app.py
+```
