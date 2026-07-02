@@ -1,8 +1,9 @@
+import os
+import tempfile
+
 import streamlit as st
 
 from speech_to_text import transcribe_audio
-from semantic_eval import calculate_similarity
-from scoring_engine import calculate_score
 
 st.set_page_config(
     page_title="Voice-Based Concept Understanding Analyser",
@@ -11,41 +12,32 @@ st.set_page_config(
 
 st.title("🎤 Voice-Based Concept Understanding Analyser")
 
-st.write(
-    "Upload an audio explanation to begin evaluation."
+uploaded = st.file_uploader(
+    "Upload WAV Audio",
+    type=["wav"]
 )
 
-uploaded_file = st.file_uploader(
-    "Choose an Audio File",
-    type=["wav", "mp3", "m4a"]
-)
+if uploaded:
 
-if uploaded_file:
+    st.audio(uploaded)
 
-    st.success("Audio uploaded successfully!")
+    if st.button("Transcribe"):
 
-    st.audio(uploaded_file)
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=".wav"
+        ) as tmp:
 
-    if st.button("Analyze"):
+            tmp.write(uploaded.read())
 
-        transcript = transcribe_audio(uploaded_file)
+            audio_path = tmp.name
 
-        similarity = calculate_similarity(
-            "Reference Concept",
-            transcript
-        )
+        with st.spinner("Transcribing..."):
 
-        score = calculate_score(similarity)
+            transcript = transcribe_audio(audio_path)
 
         st.subheader("Transcript")
+
         st.write(transcript)
 
-        st.subheader("Semantic Similarity")
-        st.write(similarity)
-
-        st.subheader("Understanding Score")
-        st.write(score)
-
-        st.info("Waveform visualization will be added later.")
-
-        st.info("PDF generation will be added later.")
+        os.remove(audio_path)
