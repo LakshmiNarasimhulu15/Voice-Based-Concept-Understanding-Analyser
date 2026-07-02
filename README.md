@@ -15,3 +15,12 @@ Steps
    python test_imports.py
 7. Launch Streamlit:
    streamlit run app_test.py
+
+   ## Project Structure
+
+- app.py – Streamlit application
+- audio_utils.py – Audio processing utilities
+- speech_to_text.py – Speech transcription
+- semantic_eval.py – Semantic similarity analysis
+- scoring_engine.py – Final scoring logic
+- report_generator.py – PDF report generation
