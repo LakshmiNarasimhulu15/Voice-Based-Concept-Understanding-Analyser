@@ -1,6 +1,8 @@
 import os
 import tempfile
 
+import librosa
+import matplotlib.pyplot as plt
 import streamlit as st
 
 from speech_to_text import transcribe_audio
@@ -15,28 +17,100 @@ from scoring_engine import (
     classify_understanding
 )
 
+# -----------------------------------------------------
+# Streamlit Page Configuration
+# -----------------------------------------------------
+
 st.set_page_config(
     page_title="Voice-Based Concept Understanding Analyser",
+    page_icon="🎤",
     layout="wide"
 )
 
+# -----------------------------------------------------
+# Sidebar
+# -----------------------------------------------------
+
+st.sidebar.title("📘 About Project")
+
+st.sidebar.info(
+    """
+Voice-Based Concept Understanding Analyser
+
+This application evaluates:
+
+• Speech Transcription (Whisper)
+
+• Semantic Similarity (Sentence-BERT)
+
+• Audio Features (Librosa)
+
+• Understanding Score
+
+• Communication Fluency
+"""
+)
+
+st.sidebar.markdown("---")
+
+st.sidebar.success("SmartBridge - Google Cloud Generative AI Internship")
+
+# -----------------------------------------------------
+# Main Title
+# -----------------------------------------------------
+
 st.title("🎤 Voice-Based Concept Understanding Analyser")
 
-st.write(
-    "Upload a WAV audio file to evaluate concept understanding."
+st.markdown(
+"""
+Evaluate spoken explanations using Artificial Intelligence.
+
+The system analyzes:
+
+- 🎙 Speech transcription
+- 🧠 Concept understanding
+- 📈 Semantic similarity
+- 🔊 Audio quality
+- ⭐ Overall understanding score
+"""
 )
 
-uploaded = st.file_uploader(
-    "Upload WAV Audio",
-    type=["wav"]
-)
+st.markdown("---")
 
-if uploaded:
+# -----------------------------------------------------
+# Waveform Function
+# -----------------------------------------------------
 
-    st.audio(uploaded)
+def plot_waveform(audio_path):
+
+    signal, sample_rate = librosa.load(audio_path, sr=None)
+
+    fig, ax = plt.subplots(figsize=(10,3))
+
+    ax.plot(signal, color="royalblue")
+
+    ax.set_title("Uploaded Audio Waveform")
+
+    ax.set_xlabel("Samples")
+
+    ax.set_ylabel("Amplitude")
+
+    st.pyplot(fig)
+
+    plt.close(fig)
+
+# -----------------------------------------------------
+# Input Layout
+# -----------------------------------------------------
+
+left, right = st.columns([1,2])
+
+with left:
+
+    st.subheader("📚 Reference Concept")
 
     concept_name = st.selectbox(
-        "Select Reference Concept",
+        "Choose a Concept",
         [
             "Machine Learning",
             "Cloud Computing",
@@ -44,7 +118,28 @@ if uploaded:
         ]
     )
 
-    if st.button("Analyze"):
+with right:
+
+    st.subheader("🎵 Upload Audio")
+
+    uploaded = st.file_uploader(
+        "Upload WAV Audio File",
+        type=["wav"]
+    )
+
+# -----------------------------------------------------
+# Audio Section
+# -----------------------------------------------------
+
+if uploaded:
+
+    st.markdown("---")
+
+    st.subheader("🔊 Audio Preview")
+
+    st.audio(uploaded)
+
+    if st.button("🚀 Analyze Audio"):
 
         with tempfile.NamedTemporaryFile(
             delete=False,
@@ -55,7 +150,11 @@ if uploaded:
 
             audio_path = tmp.name
 
-        with st.spinner("Processing..."):
+        st.subheader("📈 Waveform Visualization")
+
+        plot_waveform(audio_path)
+
+        with st.spinner("Analyzing audio... Please wait..."):
 
             transcript = transcribe_audio(audio_path)
 
@@ -85,47 +184,95 @@ if uploaded:
                 final_score
             )
 
-        st.success("Analysis Complete")
+        st.success("✅ Analysis Completed Successfully")
 
-        st.subheader("Transcript")
+        st.markdown("---")
 
-        st.write(transcript)
+        # -------------------------------------------------
+        # Transcript
+        # -------------------------------------------------
 
-        st.subheader("Evaluation")
+        with st.expander("📝 View Transcript", expanded=True):
 
-        col1, col2 = st.columns(2)
+            st.text_area(
+                "Speech Transcript",
+                transcript,
+                height=180
+            )
 
-        with col1:
+        st.markdown("---")
+
+        # -------------------------------------------------
+        # Evaluation Metrics
+        # -------------------------------------------------
+
+        st.subheader("📊 Evaluation Metrics")
+
+        c1, c2, c3, c4 = st.columns(4)
+
+        with c1:
 
             st.metric(
                 "Semantic Similarity",
                 f"{similarity:.2f}"
             )
 
+        with c2:
+
             st.metric(
                 "Pause Ratio",
                 features["pause_ratio"]
             )
 
-        with col2:
+        with c3:
 
             st.metric(
                 "RMS Energy",
                 features["rms_energy"]
             )
 
+        with c4:
+
             st.metric(
                 "Filler Ratio",
                 filler_ratio
             )
 
-        st.metric(
-            "Final Understanding Score",
-            final_score
-        )
+        st.markdown("---")
 
-        st.success(
-            f"Classification: {feedback}"
+        # -------------------------------------------------
+        # Final Score
+        # -------------------------------------------------
+
+        st.subheader("🎯 Final Evaluation")
+
+        score_col1, score_col2 = st.columns(2)
+
+        with score_col1:
+
+            st.metric(
+                "Final Understanding Score",
+                f"{final_score}/100"
+            )
+
+        with score_col2:
+
+            if feedback == "Strong Understanding":
+
+                st.success(feedback)
+
+            elif feedback == "Moderate Understanding":
+
+                st.warning(feedback)
+
+            else:
+
+                st.error(feedback)
+
+        st.markdown("---")
+
+        st.caption(
+            "Voice-Based Concept Understanding Analyser | SmartBridge Internship Project"
         )
 
         os.remove(audio_path)
