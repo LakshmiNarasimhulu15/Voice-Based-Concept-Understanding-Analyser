@@ -14,9 +14,7 @@ from scoring_engine import (
     classify_understanding,
 )
 
-# -----------------------------------------------------
-# Streamlit Page Configuration
-# -----------------------------------------------------
+
 
 st.set_page_config(
     page_title="Voice-Based Concept Understanding Analyser",
@@ -24,9 +22,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# -----------------------------------------------------
-# Session State Initialization
-# -----------------------------------------------------
+
 
 if "transcript" not in st.session_state:
     st.session_state.transcript = ""
@@ -52,9 +48,7 @@ if "feedback" not in st.session_state:
 if "analysis_complete" not in st.session_state:
     st.session_state.analysis_complete = False
 
-# -----------------------------------------------------
-# Sidebar
-# -----------------------------------------------------
+
 
 st.sidebar.title("📘 About Project")
 
@@ -78,9 +72,7 @@ st.sidebar.markdown("---")
 
 st.sidebar.success("SmartBridge - Google Cloud Generative AI Internship")
 
-# -----------------------------------------------------
-# Main Title
-# -----------------------------------------------------
+
 
 st.title("🎤 Voice-Based Concept Understanding Analyser")
 
@@ -98,9 +90,7 @@ The system analyzes:
 
 st.markdown("---")
 
-# -----------------------------------------------------
-# Waveform Function
-# -----------------------------------------------------
+
 
 
 def plot_waveform(audio_path):
@@ -128,9 +118,7 @@ def plot_waveform(audio_path):
     return waveform_path
 
 
-# -----------------------------------------------------
-# Input Layout
-# -----------------------------------------------------
+
 
 left, right = st.columns([1, 2])
 
@@ -152,9 +140,7 @@ with right:
 if uploaded is None:
     st.info("Please upload a WAV audio file to begin analysis.")
 
-# -----------------------------------------------------
-# Audio Section
-# -----------------------------------------------------
+
 
 if uploaded is not None:
 
@@ -172,9 +158,7 @@ if uploaded is not None:
     with col2:
         clear = st.button("🗑 Clear Results", use_container_width=True)
 
-    # ---------------------------------------------
-    # Clear Session
-    # ---------------------------------------------
+  
 
     if clear:
 
@@ -188,9 +172,7 @@ if uploaded is not None:
 
         st.rerun()
 
-    # ---------------------------------------------
-    # Analyze
-    # ---------------------------------------------
+
 
     if analyze:
 
@@ -262,9 +244,7 @@ if uploaded is not None:
             if "audio_path" in locals() and os.path.exists(audio_path):
                 os.remove(audio_path)
 
-# -----------------------------------------------------
-# Results
-# -----------------------------------------------------
+
 
 if st.session_state.analysis_complete:
 
