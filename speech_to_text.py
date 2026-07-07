@@ -5,7 +5,7 @@ import librosa
 import soundfile as sf
 import whisper
 
-# Load Whisper model once
+
 MODEL = whisper.load_model("base")
 
 
