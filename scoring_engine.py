@@ -1,7 +1,7 @@
 
 import re
 
-# Filler words
+
 FILLER_WORDS = [
     "um",
     "uh",
