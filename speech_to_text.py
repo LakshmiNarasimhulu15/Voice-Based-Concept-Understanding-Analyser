@@ -1,71 +1,55 @@
 import os
-import tempfile
-
 import librosa
-import soundfile as sf
 import whisper
 import streamlit as st
+import numpy as np
+from audio_utils import load_audio
 
-<<<<<<< HEAD
-
-MODEL = whisper.load_model("base")
-=======
 @st.cache_resource
 def load_whisper_model():
+    """
+    Load Whisper model and cache it using Streamlit's cache_resource
+    to ensure it only loads once.
+    """
     return whisper.load_model("base")
 
-MODEL = load_whisper_model()
->>>>>>> 8acf871 (Updated speech-to-text module and app improvements)
 
-
-def normalize_audio(input_path):
+def normalize_audio(input_path: str) -> np.ndarray:
     """
     Normalize audio:
     - Convert to mono
     - Resample to 16kHz
-    - Save temporary WAV
+    Reuses load_audio from audio_utils.py to avoid duplicated logic.
     """
-
-    audio, sr = librosa.load(
-        input_path,
-        sr=16000,
-        mono=True
-    )
-
-    temp_file = tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=".wav"
-    )
-
-    sf.write(
-        temp_file.name,
-        audio,
-        16000
-    )
-
-    return temp_file.name
+    audio_data, _ = load_audio(input_path)
+    return audio_data
 
 
-def transcribe_audio(audio_path):
+def transcribe_audio(audio_path: str) -> str:
     """
-    Convert audio into text.
+    Convert audio into text using Whisper by passing a preloaded
+    NumPy array directly to bypass FFmpeg subprocess requirements.
     """
-
-    if not os.path.exists(audio_path):
-        raise FileNotFoundError(
-            "Audio file not found."
-        )
-
-    normalized = normalize_audio(audio_path)
+    if not audio_path or not os.path.exists(audio_path):
+        return "Transcription Error: Audio file not found."
 
     try:
+        # Load and normalize audio using the shared function
+        audio_data = normalize_audio(audio_path)
 
-        result = MODEL.transcribe(
-            normalized,
+        if audio_data is None or len(audio_data) == 0:
+            return "Transcription Error: Invalid or empty audio file."
+
+        # Load Whisper model lazily inside the function (uses Streamlit cache)
+        model = load_whisper_model()
+
+        # Transcribe directly from the NumPy array
+        result = model.transcribe(
+            audio_data,
             fp16=False
         )
 
-        transcript = result["text"].strip()
+        transcript = result.get("text", "").strip()
 
         if transcript == "":
             return "No speech detected."
@@ -73,10 +57,4 @@ def transcribe_audio(audio_path):
         return transcript
 
     except Exception as e:
-
         return f"Transcription Error: {str(e)}"
-
-    finally:
-
-        if os.path.exists(normalized):
-            os.remove(normalized)
