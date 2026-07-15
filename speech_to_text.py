@@ -4,9 +4,18 @@ import tempfile
 import librosa
 import soundfile as sf
 import whisper
+import streamlit as st
 
+<<<<<<< HEAD
 
 MODEL = whisper.load_model("base")
+=======
+@st.cache_resource
+def load_whisper_model():
+    return whisper.load_model("base")
+
+MODEL = load_whisper_model()
+>>>>>>> 8acf871 (Updated speech-to-text module and app improvements)
 
 
 def normalize_audio(input_path):

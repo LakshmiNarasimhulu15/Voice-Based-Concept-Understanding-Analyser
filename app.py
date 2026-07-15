@@ -1,6 +1,6 @@
 import os
 import tempfile
-
+import time
 import librosa
 import matplotlib.pyplot as plt
 import streamlit as st
@@ -47,6 +47,17 @@ if "feedback" not in st.session_state:
 
 if "analysis_complete" not in st.session_state:
     st.session_state.analysis_complete = False
+if "transcription_time" not in st.session_state:
+    st.session_state.transcription_time = 0
+
+if "similarity_time" not in st.session_state:
+    st.session_state.similarity_time = 0
+
+if "feature_time" not in st.session_state:
+    st.session_state.feature_time = 0
+
+if "total_time" not in st.session_state:
+    st.session_state.total_time = 0
 
 
 
@@ -190,17 +201,29 @@ if uploaded is not None:
 
             with st.spinner("Analyzing audio..."):
 
+                overall_start = time.time()
+
+                # Speech Transcription
+                start = time.time()
                 transcript = transcribe_audio(audio_path)
+                transcription_time = time.time() - start
 
+                # Semantic Similarity
                 concepts = load_reference_concepts()
-
                 reference = concepts[concept_name]
 
+                start = time.time()
                 similarity = calculate_similarity(reference, transcript)
+                similarity_time = time.time() - start
 
+                # Audio Features
+                start = time.time()
                 features = extract_audio_features(audio_path)
+                feature_time = time.time() - start
 
                 filler_ratio = calculate_filler_ratio(transcript)
+
+                total_time = time.time() - overall_start
 
                 final_score = calculate_final_score(
                     similarity,
@@ -230,6 +253,10 @@ if uploaded is not None:
             st.session_state.filler_ratio = filler_ratio
             st.session_state.final_score = final_score
             st.session_state.feedback = feedback
+            st.session_state.transcription_time = transcription_time
+            st.session_state.similarity_time = similarity_time
+            st.session_state.feature_time = feature_time
+            st.session_state.total_time = total_time
             st.session_state.pdf = pdf_file
             st.session_state.analysis_complete = True
 
@@ -265,6 +292,23 @@ if st.session_state.analysis_complete:
     with st.expander("📝 View Transcript", expanded=True):
 
         st.text_area("Speech Transcript", st.session_state.transcript, height=180)
+
+    st.markdown("---")
+    st.subheader("⚡ Performance Metrics")
+
+    p1, p2, p3, p4 = st.columns(4)
+
+    with p1:
+        st.metric("Transcription", f"{st.session_state.transcription_time:.2f} s")
+
+    with p2:
+        st.metric("Similarity", f"{st.session_state.similarity_time:.2f} s")
+
+    with p3:
+        st.metric("Feature Extraction", f"{st.session_state.feature_time:.2f} s")
+
+    with p4:
+        st.metric("Total Runtime", f"{st.session_state.total_time:.2f} s")
 
     st.markdown("---")
 
